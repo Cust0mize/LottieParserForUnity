@@ -15,18 +15,17 @@ namespace Game.Scripts.JsonAnimationImporter {
                     float xTime = (float)currentKey.Time / 60;
                     float xValue = (float)currentKey.Value[0];
                     float yValue = (float)currentKey.Value[1];
-                    Vector2 inTangent = tangentParameters.InTangent.normalized;
-                    Vector2 outTangent = tangentParameters.OutTangent.normalized;
-
-                    SetAnimationCurveValues(xTime, xValue, -yValue, inTangent, outTangent);
+                    Vector2 inTangent = tangentParameters.InTangent;
+                    Vector2 outTangent = tangentParameters.OutTangent;
+                    SetAnimationCurveValues(xTime, xValue, -yValue, inTangent, outTangent, tangentParameters.InWeight, tangentParameters.OutWeight);
                 }
             }
             else if (positionProperty.Values is StaticAnimationParameter staticAnimationParameter) {
                 Vector3 position = GetVectorFromStaticAnimationParameters(staticAnimationParameter);
-                SetAnimationCurveValues(0, position.x, -position.y, Vector2.zero, Vector2.zero, 0);
+                SetAnimationCurveValues(0, position.x, -position.y, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero);
             }
             else if (positionProperty.Values is StaticSingleValue staticSingleValue) {
-                SetAnimationCurveValues(0, (float)staticSingleValue.Values, -(float)staticSingleValue.Values, Vector2.zero, Vector2.zero, 0, 0);
+                SetAnimationCurveValues(0, (float)staticSingleValue.Values, -(float)staticSingleValue.Values, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero);
             }
         }
     }

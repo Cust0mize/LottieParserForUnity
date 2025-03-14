@@ -74,13 +74,11 @@ namespace Game.Scripts.JsonAnimationImporter {
         float yValue,
         Vector2 inTangent,
         Vector2 outTangent,
-        float inWeightX = 0,
-        float inWeightY = 0,
-        float outWeightX = 0,
-        float outWeightY = 0
+        Vector2 inWeight,
+        Vector2 outWeight
         ) {
-            Keyframe xKeyFrame = new Keyframe(time, xValue, inTangent.x, outTangent.x, inWeightX, outWeightX);
-            Keyframe yKeyFrame = new Keyframe(time, yValue, inTangent.y, outTangent.y, inWeightY, outWeightY);
+            Keyframe xKeyFrame = new Keyframe(time, xValue, inTangent.x, outTangent.x, inWeight.x, outWeight.x);
+            Keyframe yKeyFrame = new Keyframe(time, yValue, inTangent.y, outTangent.y, inWeight.y, outWeight.y);
             _animationCurveX.AddKey(xKeyFrame);
             _animationCurveY.AddKey(yKeyFrame);
         }
@@ -96,43 +94,36 @@ namespace Game.Scripts.JsonAnimationImporter {
     public readonly struct CurveTangentParameters {
         public readonly Vector2 InTangent;
         public readonly Vector2 OutTangent;
-
-        public readonly float InWeightX;
-        public readonly float OutWeightX;
-        public readonly float InWeightY;
-        public readonly float OutWeightY;
+        public readonly Vector2 InWeight;
+        public readonly Vector2 OutWeight;
 
         public CurveTangentParameters(LottieKeyframe lottieKeyframe) {
-            if (lottieKeyframe.Ti != null && lottieKeyframe.Ti.Count > 0) {
-                InTangent = new Vector2((float)lottieKeyframe.Ti[0], (float)lottieKeyframe.Ti[1]);
+            if (lottieKeyframe.TangentInput != null && lottieKeyframe.TangentInput.Count > 0) {
+                InTangent = new Vector2((float)lottieKeyframe.TangentInput[0], (float)lottieKeyframe.TangentInput[1]);
             }
             else {
                 InTangent = Vector2.zero;
             }
 
-            if (lottieKeyframe.To != null && lottieKeyframe.To.Count > 0) {
-                OutTangent = new Vector2((float)lottieKeyframe.To[0], (float)lottieKeyframe.To[1]);
+            if (lottieKeyframe.TangentOutput != null && lottieKeyframe.TangentOutput.Count > 0) {
+                OutTangent = new Vector2((float)lottieKeyframe.TangentOutput[0], (float)lottieKeyframe.TangentOutput[1]);
             }
             else {
                 OutTangent = Vector2.zero;
             }
 
-            if (lottieKeyframe.InTangent != null) {
-                InWeightX = lottieKeyframe.InTangent.ValueX;
-                InWeightY = lottieKeyframe.InTangent.ValueY;
+            if (lottieKeyframe.InputWeight != null) {
+                InWeight = new Vector2(lottieKeyframe.InputWeight.ValueX, lottieKeyframe.InputWeight.ValueY);
             }
             else {
-                InWeightX = 0;
-                InWeightY = 0;
+                InWeight = Vector2.zero;
             }
 
-            if (lottieKeyframe.OutTangent != null) {
-                OutWeightX = lottieKeyframe.OutTangent.ValueX;
-                OutWeightY = lottieKeyframe.OutTangent.ValueY;
+            if (lottieKeyframe.OutputWeight != null) {
+                OutWeight = new Vector2(lottieKeyframe.OutputWeight.ValueX, lottieKeyframe.OutputWeight.ValueY);
             }
             else {
-                OutWeightX = 0;
-                OutWeightY = 0;
+                OutWeight = Vector2.zero;
             }
         }
     }
