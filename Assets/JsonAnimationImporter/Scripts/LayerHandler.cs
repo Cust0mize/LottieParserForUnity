@@ -1,7 +1,7 @@
 ﻿using JsonAnimationImporter.LottieAnimationSerializable;
 using System.Collections.Generic;
 
-namespace Game.Scripts.JsonAnimationImporter {
+namespace JsonAnimationImporter.Scripts {
     public class LayerHandler {
         private readonly LottieAnimation _lottieAnimation;
         private readonly List<Layer> _allAnimationLayers;

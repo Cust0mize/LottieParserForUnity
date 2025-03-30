@@ -1,26 +1,19 @@
 ﻿using JsonAnimationImporter.LottieAnimationSerializable;
 using System.Collections.Generic;
-using UnityEditor.Animations;
 using UnityEngine.UI;
-using UnityEditor;
 using UnityEngine;
 using System.IO;
 using System;
 
-namespace Game.Scripts.JsonAnimationImporter {
+namespace JsonAnimationImporter.Scripts {
     public class AnimationAssetCreator {
         private readonly Dictionary<string, Image> _imageAssets;
         private readonly LottieAnimation _lottieAnimation;
         private readonly Transform _creatorRoot;
         private readonly string _savePath;
-
-        private AnimationClip _animationClip;
+        
         private Transform _animationRoot;
-
-        public AnimationClip AnimationClip => _animationClip;
-
-        private const string ANIMATION_SAVE_PATH = "Assets/LottieAnimations";
-
+        
         public AnimationAssetCreator(LottieAnimation animation, Transform creatorRoot, string savePath) {
             _lottieAnimation = animation;
             _savePath = savePath;
@@ -44,10 +37,6 @@ namespace Game.Scripts.JsonAnimationImporter {
 
         private void CreateRootAndSetup() {
             GameObject instanceRoot = new GameObject(_lottieAnimation.Name, typeof(RectTransform));
-            // instanceRoot.AddComponent<Animator>();
-            // Animation animationComponent = instanceRoot.AddComponent<Animation>();
-            // _animationClip = CreateAndGetAnimationClip(instanceRoot, _lottieAnimation);
-            // animationComponent.clip = _animationClip;
             instanceRoot.transform.SetParent(_creatorRoot, false);
             RectTransform instanceRect = instanceRoot.transform as RectTransform;
             instanceRect.sizeDelta = new Vector2((float)_lottieAnimation.Width, (float)_lottieAnimation.Height);
@@ -75,29 +64,6 @@ namespace Game.Scripts.JsonAnimationImporter {
                     _imageAssets.Add(imageAsset.AssetID, imageComponent);
                 }
             }
-        }
-
-        private AnimationClip CreateAndGetAnimationClip(GameObject targetObject, LottieAnimation animation) {
-            if (!AssetDatabase.IsValidFolder(ANIMATION_SAVE_PATH)) {
-                AssetDatabase.CreateFolder("Assets", "LottieAnimations");
-            }
-
-            string animationClipPath = $"{ANIMATION_SAVE_PATH}/{animation.Name}.anim";
-            string controllerPath = $"{ANIMATION_SAVE_PATH}/{animation.Name}_Controller.controller";
-            AnimationClip animationClip = new AnimationClip { legacy = false };
-            AssetDatabase.CreateAsset(animationClip, animationClipPath);
-            AnimatorController animatorController = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
-            AnimatorState state = animatorController.layers[0].stateMachine.AddState(animation.Name);
-            state.motion = animationClip;
-            Animator animator = targetObject.GetComponent<Animator>();
-
-            if (!animator) {
-                animator = targetObject.AddComponent<Animator>();
-            }
-
-            animator.runtimeAnimatorController = animatorController;
-            animationClip.frameRate = (float)animation.FrameRate;
-            return animationClip;
         }
 
         private byte[] CreateImage(string base64Image, string savePath) {
