@@ -1,0 +1,6 @@
+[submodule "Assets/Assets/Plugins/Unity-Bezier"]
+	path = Assets/Assets/Plugins/Unity-Bezier
+	url = https://github.com/Cust0mize/Unity-Bezier.git
+[submodule "Assets/Plugins/Unity-Bezier"]
+	path = Assets/Plugins/Unity-Bezier
+	url = https://github.com/Cust0mize/Unity-Bezier.git
