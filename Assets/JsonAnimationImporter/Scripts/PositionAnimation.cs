@@ -71,8 +71,8 @@ namespace Game.Scripts.JsonAnimationImporter {
         ) {
             mainStartPointPosition = GetInverseYPosition(currentKeyPosition.Value.ConvertToVector2());
             mainEndPointPosition = GetInverseYPosition(nextKeyPosition.Value.ConvertToVector2());
-            helpStartPointPosition = mainStartPointPosition + GetInverseYPosition(currentKeyPosition.To.ConvertToVector2());
-            helpEndPointPosition = mainEndPointPosition + GetInverseYPosition(currentKeyPosition.Ti.ConvertToVector2());
+            helpStartPointPosition = mainStartPointPosition + GetInverseYPosition(currentKeyPosition.TangentOutput.ConvertToVector2());
+            helpEndPointPosition = mainEndPointPosition + GetInverseYPosition(currentKeyPosition.TangentInput.ConvertToVector2());
         }
 
         private Vector2 GetInverseYPosition(Vector2 position) {

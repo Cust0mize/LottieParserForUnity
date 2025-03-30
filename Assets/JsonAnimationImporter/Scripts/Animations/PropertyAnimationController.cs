@@ -6,7 +6,7 @@ using System;
 
 namespace Game.Scripts.JsonAnimationImporter {
     public class PropertyAnimationController {
-        private Dictionary<Type, BasePropertyAnimator> _animators;
+        private readonly Dictionary<Type, BasePropertyAnimator> _animators;
 
         public PropertyAnimationController() {
             _animators = new Dictionary<Type, BasePropertyAnimator>()
