@@ -1,4 +1,5 @@
 ﻿using JsonAnimationImporter.LottieAnimationSerializable;
+using UnityEngine.UI;
 using UnityEngine;
 
 namespace Game.Scripts.JsonAnimationImporter {
@@ -8,15 +9,15 @@ namespace Game.Scripts.JsonAnimationImporter {
         private AnimationClip _animationClip;
         protected abstract string AnimationParameter { get; }
 
-        public void StartAnimation(TransformProperties transformProperties, AnimationClip animationClip, string objectPath) {
+        public IAnimationParameter StartAnimation(TransformProperties transformProperties, AnimationClip animationClip, Image imageComponent) {
             _animationClip = animationClip;
             _animationCurveX = new AnimationCurve();
             _animationCurveY = new AnimationCurve();
-            Animation(transformProperties);
-            SetCurveValue(objectPath);
+            return Animation(transformProperties);
+            // SetCurveValue(objectPath);
         }
 
-        protected abstract void Animation(TransformProperties transformProperties);
+        protected abstract IAnimationParameter Animation(TransformProperties transformProperties);
 
         protected void SetCurveValue(string objectPath) {
             if (objectPath == null) {

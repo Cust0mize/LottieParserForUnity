@@ -5,14 +5,6 @@ using UnityEngine;
 using System;
 
 namespace JsonAnimationImporter.LottieAnimationSerializable {
-    public class StaticSingleValue : IAnimationParameter {
-        [JsonProperty("k")] public double Values { get; set; }
-    }
-
-    public class AnimatedAnimationParameter : IAnimationParameter {
-        [JsonProperty("k")] public List<LottieKeyframe> Keyframes { get; set; }
-    }
-
     public interface IAnimationParameter {
     }
 

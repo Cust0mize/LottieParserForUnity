@@ -9,21 +9,23 @@ using System;
 
 namespace Game.Scripts.JsonAnimationImporter {
     public class AnimationAssetCreator {
-        private const string ANIMATION_SAVE_PATH = "Assets/LottieAnimations";
-        private AnimationClip _animationClip;
-        private Dictionary<string, Image> _imagesAssets;
-
+        private readonly Dictionary<string, Image> _imageAssets;
         private readonly LottieAnimation _lottieAnimation;
         private readonly Transform _creatorRoot;
         private readonly string _savePath;
+
+        private AnimationClip _animationClip;
         private Transform _animationRoot;
+
         public AnimationClip AnimationClip => _animationClip;
+
+        private const string ANIMATION_SAVE_PATH = "Assets/LottieAnimations";
 
         public AnimationAssetCreator(LottieAnimation animation, Transform creatorRoot, string savePath) {
             _lottieAnimation = animation;
             _savePath = savePath;
             _creatorRoot = creatorRoot;
-            _imagesAssets = new Dictionary<string, Image>();
+            _imageAssets = new Dictionary<string, Image>();
         }
 
         public void Install(Vector2 anchoredPosition, Vector2 pivot) {
@@ -32,15 +34,20 @@ namespace Game.Scripts.JsonAnimationImporter {
         }
 
         public Image GetImageComponentByID(string assetId) {
-            return _imagesAssets[assetId];
+            if (assetId != null && _imageAssets.ContainsKey(assetId)) {
+                return _imageAssets[assetId];
+            }
+
+            Debug.LogWarning($"None of the assets with id: {assetId}");
+            return null;
         }
 
         private void CreateRootAndSetup() {
             GameObject instanceRoot = new GameObject(_lottieAnimation.Name, typeof(RectTransform));
-            instanceRoot.AddComponent<Animator>();
-            Animation animationComponent = instanceRoot.AddComponent<Animation>();
-            _animationClip = CreateAndGetAnimationClip(instanceRoot, _lottieAnimation);
-            animationComponent.clip = _animationClip;
+            // instanceRoot.AddComponent<Animator>();
+            // Animation animationComponent = instanceRoot.AddComponent<Animation>();
+            // _animationClip = CreateAndGetAnimationClip(instanceRoot, _lottieAnimation);
+            // animationComponent.clip = _animationClip;
             instanceRoot.transform.SetParent(_creatorRoot, false);
             RectTransform instanceRect = instanceRoot.transform as RectTransform;
             instanceRect.sizeDelta = new Vector2((float)_lottieAnimation.Width, (float)_lottieAnimation.Height);
@@ -65,7 +72,7 @@ namespace Game.Scripts.JsonAnimationImporter {
                     imageComponent.rectTransform.anchorMin = anchoredPosition;
                     imageComponent.rectTransform.anchorMax = anchoredPosition;
                     imageComponent.rectTransform.pivot = pivot;
-                    _imagesAssets.Add(imageAsset.AssetID, imageComponent);
+                    _imageAssets.Add(imageAsset.AssetID, imageComponent);
                 }
             }
         }

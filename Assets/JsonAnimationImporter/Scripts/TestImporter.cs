@@ -1,5 +1,8 @@
 using JsonAnimationImporter.LottieAnimationSerializable;
 using Game.Scripts.Utilities.Attributes;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using UnityEngine.UI;
 using UnityEngine;
 
 #if UNITY_EDITOR
@@ -13,6 +16,10 @@ namespace Game.Scripts.JsonAnimationImporter {
         [SerializeField] private Vector2 _pivot;
         [SerializeField] private string _savePath;
 
+        private Dictionary<Image, IEnumerable<ImageAnimationElement>> _animations = new Dictionary<Image, IEnumerable<ImageAnimationElement>>();
+        private AnimationPlayer _animationPlayer = new AnimationPlayer(new IAnimation[] { new PositionAnimation(), new ScaleAnimation() });
+
+
         private PropertyAnimationController _propertyAnimationController;
         private AnimationAssetCreator _animationAssetCreator;
         private LottieAnimationParser _lottieAnimationParser;
@@ -20,6 +27,7 @@ namespace Game.Scripts.JsonAnimationImporter {
 
         [Button]
         public void StartImport() {
+            _animations.Clear();
             _propertyAnimationController = new PropertyAnimationController();
             _lottieAnimationParser = new LottieAnimationParser(_textAsset.text);
             _lottieAnimationParser.ParseLottinAnimation();
@@ -30,110 +38,74 @@ namespace Game.Scripts.JsonAnimationImporter {
 
             for (int i = 0; i < _layerHandler.AnimationLayersCount; i++) {
                 Layer currentLayer = _layerHandler.GetLayerByIndex(i);
+                Image imageComponent = _animationAssetCreator.GetImageComponentByID(currentLayer.ReferenceId);
 
-                if (currentLayer.ReferenceId == "image_6") {
-                    Debug.Log("check");
+                if (imageComponent == null) {
+                    continue;
+                } 
+
+                IEnumerable<ImageAnimationElement> animationParameters = _propertyAnimationController.StartAnimation(currentLayer.Transform, _animationAssetCreator.AnimationClip, imageComponent);
+
+                if (_animations.ContainsKey(imageComponent)) {
+                    continue;
                 }
 
-                _propertyAnimationController.StartAnimation(currentLayer.Transform, _animationAssetCreator.AnimationClip, currentLayer.ReferenceId);
+                _animations.Add(imageComponent, animationParameters);
             }
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
-    }
 
-    public abstract class BasePropertyAnimator {
-        private AnimationCurve _animationCurveX;
-        private AnimationCurve _animationCurveY;
-        private AnimationClip _animationClip;
-        protected abstract string AnimationParameter { get; }
+        [Button]
+        public void PlayAnimation() {
+            foreach (KeyValuePair<Image, IEnumerable<ImageAnimationElement>> element in _animations) {
+                Image image = element.Key;
+                IEnumerable<ImageAnimationElement> animationParameters = element.Value;
 
-        public void StartAnimation(TransformProperties transformProperties, AnimationClip animationClip, string objectPath) {
-            _animationClip = animationClip;
-            _animationCurveX = new AnimationCurve();
-            _animationCurveY = new AnimationCurve();
-            Animation(transformProperties);
-            SetCurveValue(objectPath);
-        }
-
-        protected abstract void Animation(TransformProperties transformProperties);
-
-        protected void SetCurveValue(string objectPath) {
-            if (objectPath == null) {
-                return;
+                foreach (ImageAnimationElement animationParameter in animationParameters) {
+                    _animationPlayer.PlayAnimation(animationParameter, image);
+                }
             }
-
-            _animationClip.SetCurve(objectPath, typeof(RectTransform), $"{AnimationParameter}.x", _animationCurveX);
-            _animationClip.SetCurve(objectPath, typeof(RectTransform), $"{AnimationParameter}.y", _animationCurveY);
-        }
-
-        protected void SetAnimationCurveValues(
-        float time,
-        float xValue,
-        float yValue,
-        Vector2 inTangent,
-        Vector2 outTangent,
-        float inWeightX = 0,
-        float inWeightY = 0,
-        float outWeightX = 0,
-        float outWeightY = 0
-        ) {
-            Keyframe xKeyFrame = new Keyframe(time, xValue, inTangent.x, outTangent.x, inWeightX, outWeightX);
-            Keyframe yKeyFrame = new Keyframe(time, yValue, inTangent.y, outTangent.y, inWeightY, outWeightY);
-            _animationCurveX.AddKey(xKeyFrame);
-            _animationCurveY.AddKey(yKeyFrame);
-        }
-
-        protected Vector3 GetVectorFromStaticAnimationParameters(StaticAnimationParameter staticAnimationParameter) {
-            float xValue = (float)staticAnimationParameter.Values[0];
-            float yValue = (float)staticAnimationParameter.Values[1];
-            float zValue = (float)staticAnimationParameter.Values[2];
-            return new Vector3(xValue, yValue, zValue);
         }
     }
 
-    public readonly struct CurveTangentParameters {
-        public readonly Vector2 InTangent;
-        public readonly Vector2 OutTangent;
+    public class AnimationPlayer {
+        private readonly IAnimation[] _animations;
 
-        public readonly float InWeightX;
-        public readonly float OutWeightX;
-        public readonly float InWeightY;
-        public readonly float OutWeightY;
+        public AnimationPlayer(IAnimation[] animations) {
+            _animations = animations;
+        }
 
-        public CurveTangentParameters(LottieKeyframe lottieKeyframe) {
-            if (lottieKeyframe.Ti != null && lottieKeyframe.Ti.Count > 0) {
-                InTangent = new Vector2((float)lottieKeyframe.Ti[0], (float)lottieKeyframe.Ti[1]);
+        public void PlayAnimation(ImageAnimationElement animationParameter, Image image) {
+            for (int i = 0; i < _animations.Length; i++) {
+                _animations[i].PlayAnimation(animationParameter, image).Forget();
             }
-            else {
-                InTangent = Vector2.zero;
-            }
+        }
+    }
 
-            if (lottieKeyframe.To != null && lottieKeyframe.To.Count > 0) {
-                OutTangent = new Vector2((float)lottieKeyframe.To[0], (float)lottieKeyframe.To[1]);
-            }
-            else {
-                OutTangent = Vector2.zero;
-            }
+    public interface IAnimation {
+        public UniTaskVoid PlayAnimation(ImageAnimationElement animationParameter, Image image);
+    }
 
-            if (lottieKeyframe.InTangent != null) {
-                InWeightX = lottieKeyframe.InTangent.ValueX;
-                InWeightY = lottieKeyframe.InTangent.ValueY;
+    public class ScaleAnimation : IAnimation {
+        public async UniTaskVoid PlayAnimation(ImageAnimationElement animationParameter, Image image) {
+            if (animationParameter.BasePropertyAnimator is ScalePropertyAnimator scalePropertyAnimator) {
+                if (animationParameter.TransformProperties.Scale.Values is StaticAnimationParameter staticAnimationParameter) {
+                    Vector2 values = GetScaleValue(animationParameter.TransformProperties.AnchorPoint, (float)staticAnimationParameter.Values[0], (float)staticAnimationParameter.Values[1]);
+                    image.rectTransform.sizeDelta = values;
+                }
+                else if (animationParameter.TransformProperties.Scale.Values is StaticSingleValue staticSingleValue) {
+                    image.rectTransform.sizeDelta = new Vector2((float)staticSingleValue.Values, (float)staticSingleValue.Values);
+                }
             }
-            else {
-                InWeightX = 0;
-                InWeightY = 0;
-            }
+        }
 
-            if (lottieKeyframe.OutTangent != null) {
-                OutWeightX = lottieKeyframe.OutTangent.ValueX;
-                OutWeightY = lottieKeyframe.OutTangent.ValueY;
-            }
-            else {
-                OutWeightX = 0;
-                OutWeightY = 0;
-            }
+        private Vector2 GetScaleValue(AnchorPoint anchorPoint, float xPrecentScale, float yPrecentScale) {
+            StaticAnimationParameter staticAnchornValues = anchorPoint.Values as StaticAnimationParameter;
+            float xValue = (float)staticAnchornValues.Values[0] * 2 * (xPrecentScale / 100);
+            float yValue = (float)staticAnchornValues.Values[1] * 2 * (yPrecentScale / 100);
+            return new Vector2(xValue, yValue);
         }
     }
 }
