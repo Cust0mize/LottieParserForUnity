@@ -1,10 +1,10 @@
-﻿using JsonAnimationImporter.LottieAnimationSerializable;
+﻿using JsonAnimationImporter.Scripts.LottieAnimationSerializable;
+using JsonAnimationImporter.LottieAnimationSerializable;
 using System.Collections.Generic;
 using Game.Scripts.Extensions;
 using Cysharp.Threading.Tasks;
 using Bezier.Scripts.Models;
 using Bezier.Scripts.Mono;
-using JsonAnimationImporter.Scripts.LottieAnimationSerializable;
 using UnityEngine.UI;
 using UnityEngine;
 
