@@ -11,9 +11,9 @@ namespace JsonAnimationImporter.Scripts {
         private readonly LottieAnimation _lottieAnimation;
         private readonly Transform _creatorRoot;
         private readonly string _savePath;
-        
+
         private Transform _animationRoot;
-        
+
         public AnimationAssetCreator(LottieAnimation animation, Transform creatorRoot, string savePath) {
             _lottieAnimation = animation;
             _savePath = savePath;
@@ -61,6 +61,7 @@ namespace JsonAnimationImporter.Scripts {
                     imageComponent.rectTransform.anchorMin = anchoredPosition;
                     imageComponent.rectTransform.anchorMax = anchoredPosition;
                     imageComponent.rectTransform.pivot = pivot;
+                    imageComponent.preserveAspect = false;
                     _imageAssets.Add(imageAsset.AssetID, imageComponent);
                 }
             }

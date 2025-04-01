@@ -10,6 +10,7 @@ using UnityEngine;
 
 namespace JsonAnimationImporter.Scripts {
     public class TestImporter : MonoBehaviour {
+        [SerializeField] private AnimationCurve _animationCurve;
         [SerializeField] private TextAsset _textAsset;
         [SerializeField] private Vector2 _anchoredPosition;
         [SerializeField] private Vector2 _pivot;
